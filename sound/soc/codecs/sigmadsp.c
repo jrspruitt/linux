@@ -755,7 +755,7 @@ int sigmadsp_setup(struct sigmadsp *sigmadsp, unsigned int samplerate)
 			continue;
 		ret = sigmadsp_write(sigmadsp, data->addr, data->data,
 			data->length);
-		if (ret)
+		if (ret < 0)
 			goto err;
 	}
 

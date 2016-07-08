@@ -125,11 +125,11 @@ static const struct snd_kcontrol_new adau1701_controls[] = {
 };
 
 static const struct snd_soc_dapm_widget adau1701_dapm_widgets[] = {
-	SND_SOC_DAPM_DAC("DAC0", "Playback", ADAU1701_AUXNPOW, 3, 1),
-	SND_SOC_DAPM_DAC("DAC1", "Playback", ADAU1701_AUXNPOW, 2, 1),
-	SND_SOC_DAPM_DAC("DAC2", "Playback", ADAU1701_AUXNPOW, 1, 1),
-	SND_SOC_DAPM_DAC("DAC3", "Playback", ADAU1701_AUXNPOW, 0, 1),
-	SND_SOC_DAPM_ADC("ADC", "Capture", ADAU1701_AUXNPOW, 7, 1),
+	SND_SOC_DAPM_DAC("DAC0", "Playback", ADAU1701_AUXNPOW, 4, 1),
+	SND_SOC_DAPM_DAC("DAC1", "Playback", ADAU1701_AUXNPOW, 4, 1),
+	SND_SOC_DAPM_DAC("DAC2", "Playback", ADAU1701_AUXNPOW, 4, 1),
+	SND_SOC_DAPM_DAC("DAC3", "Playback", ADAU1701_AUXNPOW, 4, 1),
+	SND_SOC_DAPM_ADC("ADC", "Capture", ADAU1701_AUXNPOW, 4, 1),
 
 	SND_SOC_DAPM_OUTPUT("OUT0"),
 	SND_SOC_DAPM_OUTPUT("OUT1"),
@@ -437,6 +437,10 @@ static int adau1701_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_codec *codec = dai->codec;
 	struct adau1701 *adau1701 = snd_soc_codec_get_drvdata(codec);
+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
+	int blck_ratio = snd_pcm_format_physical_width(params_format(params))
+		                                    * params_channels(params) * 2;
 	unsigned int clkdiv = adau1701->sysclk / params_rate(params);
 	unsigned int val;
 	int ret;
@@ -451,6 +455,10 @@ static int adau1701_hw_params(struct snd_pcm_substream *substream,
 		if (ret < 0)
 			return ret;
 	}
+
+    ret = snd_soc_dai_set_bclk_ratio(cpu_dai, blck_ratio);
+    if (ret < 0)
+        return ret;
 
 	switch (params_rate(params)) {
 	case 192000:
@@ -564,11 +572,13 @@ static int adau1701_set_bias_level(struct snd_soc_codec *codec,
 		regmap_update_bits(adau1701->regmap,
 				   ADAU1701_AUXNPOW, mask, 0x00);
 		break;
+/*
 	case SND_SOC_BIAS_OFF:
-		/* Disable VREF and VREF buffer */
+		// Disable VREF and VREF buffer
 		regmap_update_bits(adau1701->regmap,
 				   ADAU1701_AUXNPOW, mask, mask);
 		break;
+*/
 	}
 
 	return 0;
@@ -632,7 +642,7 @@ static int adau1701_startup(struct snd_pcm_substream *substream,
 static const struct snd_soc_dai_ops adau1701_dai_ops = {
 	.set_fmt	= adau1701_set_dai_fmt,
 	.hw_params	= adau1701_hw_params,
-	.digital_mute	= adau1701_digital_mute,
+	//.digital_mute	= adau1701_digital_mute,
 	.startup	= adau1701_startup,
 };
 

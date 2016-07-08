@@ -8,6 +8,13 @@ config SND_BCM2835_SOC_I2S
 	  the BCM2835 I2S interface. You will also need
 	  to select the audio interfaces to support below.
 
+config SND_BCM2708_SOC_DSPROTO
+        tristate "Support for DSProto"
+        depends on I2C && (SND_BCM2708_SOC_I2S || SND_BCM2835_SOC_I2S)
+        select SND_SOC_ADAU1701
+        help
+         Say Y or M if you want to add support for DSProto.
+
 config SND_BCM2708_SOC_HIFIBERRY_DAC
         tristate "Support for HifiBerry DAC"
         depends on SND_BCM2708_SOC_I2S || SND_BCM2835_SOC_I2S

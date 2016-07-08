@@ -1,0 +1,52 @@
+// Definitions for DSProto DSP
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target = <&i2s>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@1 {
+		target = <&gpio>;
+		__overlay__ {
+			dsp_pins: dsp_pins {
+				brcm,pins = <5 6 13>;
+				brcm,function = <1>; // all out
+			};
+		};
+	};
+
+	fragment@2 {
+		target = <&i2c1>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			adau1701@34 {
+				#sound-dai-cells = <0>;
+				compatible = "adi,adau1701";
+				reg = <0x34>;
+				reset-gpio = <&gpio 13 0>;
+                adi,pll-mode-gpios = <&gpio 5 0 &gpio 6 0>;
+                adi,pin-config = /bits/ 8 <0x4 0x7 0x7 0x7 0x4 0x4 0x4 0x4 0x7 0x6 0x4 0x4>;
+				status = "okay";
+			};
+		};
+	};
+
+	fragment@3 {
+		target = <&sound>;
+		__overlay__ {
+			compatible = "dsproto,dsproto-dsp";
+			i2s-controller = <&i2s>;
+			status = "okay";
+		};
+	};
+};
